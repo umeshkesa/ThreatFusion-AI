@@ -11,6 +11,15 @@ const calculateRisk = (feed, asset, cvss = 0, epss = 0, isKEV = false, hasExploi
   // CVSS contribution
   score += cvss * 4; // 0–40
 
+
+  // vkg
+  if (malwareDetected) riskScore += 1;
+if (isKEV) riskScore += 1;
+
+// 🔥 NEW: indirect relation boost
+if (feed.indirectMatch) {
+  riskScore += 0.5;
+}
   // EPSS contribution (0–1 → 0–30)
   score += epss * 30;
      if (hasExploitDB) score += 25; // 🔥 exploit exists

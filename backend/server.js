@@ -6,37 +6,41 @@ const Feed = require("./models/Feed");
 const getFeedsFromOPML = require("./services/opmlService");
 const fetchRSS = require("./services/rssService");
 const extractData = require("./services/extractionService");
-const Asset = require("./models/Asset");
 const generateAlerts = require("./services/alertService");
 const { loadExploitDB } = require("./services/exploitService");
 const fetchKEV = require("./services/kevService");
 const fetchMalwareSamples = require("./services/malwareService");
+const assetRoutes = require("./routes/assetRoutes");
 
 let kevSet = new Set();
 let exploitSet = new Set();
 let malwareData = [];
 
-(async () => {
-  exploitSet = await loadExploitDB();
-})();
-
-(async () => {
-  kevSet = await fetchKEV();
-  console.log("KEV loaded:", kevSet.size);
-})();
-
-(async () => {
-  malwareData = await fetchMalwareSamples();
-  console.log("Malware samples loaded:", malwareData.length);
-})();
-
 dotenv.config();
 connectDB();
+
+(async () => {
+    exploitSet = await loadExploitDB();
+})();
+
+(async () => {
+    kevSet = await fetchKEV();
+    console.log("KEV loaded:", kevSet.size);
+})();
+
+(async () => {
+    malwareData = await fetchMalwareSamples();
+    console.log("Malware samples loaded:", malwareData.length);
+})();
+
+
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+app.use("/api/assets", assetRoutes);
 
 // Test route
 app.get("/", (req, res) => {
@@ -81,15 +85,20 @@ app.get("/fetch-feeds", async (req, res) => {
         //const feedUrls = await getFeedsFromOPML();   // ✅ correct
         const allFeeds = await getFeedsFromOPML();
 
-// 🔥 Limit feeds (example: 50)
+        // 🔥 Limit feeds (example: 50)
         const shuffled = allFeeds.sort(() => 0.5 - Math.random());
-const feedUrls = shuffled.slice(0, 50);
+        const feedUrls = shuffled.slice(0, 50);
         const items = await fetchRSS(feedUrls);
 
         let saved = 0;
 
         for (let item of items) {
             const exists = await Feed.findOne({ url: item.link });
+             console.log("\n📰 TITLE:", item.title);
+
+    const extracted = extractData(item.title + " " + item.contentSnippet);
+
+    console.log("🔍 EXTRACTED:", extracted);
 
             if (!exists) {
                 const extracted = extractData(item.title + " " + item.contentSnippet);
@@ -104,7 +113,7 @@ const feedUrls = shuffled.slice(0, 50);
                 });
 
                 // 🔥 Generate alerts
-                await generateAlerts(newFeed);
+               await generateAlerts(newFeed, kevSet, malwareData);
                 saved++;
             }
         }
@@ -124,30 +133,30 @@ const Alert = require("./models/Alert");
 
 // Get only HIGH/CRITICAL alerts
 app.get("/alerts", async (req, res) => {
-  try {
-    const alerts = await Alert.find({
-      priority: { $in: ["CRITICAL", "HIGH"] }
-    }).sort({ riskScore: -1 });
+    try {
+        const alerts = await Alert.find({
+            priority: { $in: ["CRITICAL", "HIGH"] }
+        }).sort({ riskScore: -1 });
 
-    res.json(alerts);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+        res.json(alerts);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 //adding asset 
-app.get("/add-asset", async (req, res) => {
-    const asset = await Asset.create({
-        assetName: "Payment Server",
-        software: [
-            { name: "openssl", version: "1.1.1" },
-            { name: "nginx", version: "1.18" }
-        ],
-        criticality: "HIGH"
-    });
+// app.get("/add-asset", async (req, res) => {
+//     const asset = await Asset.create({
+//         assetName: "Payment Server",
+//         software: [
+//             { name: "openssl", version: "1.1.1" },
+//             { name: "nginx", version: "1.18" }
+//         ],
+//         criticality: "HIGH"
+//     });
 
-    res.json(asset);
-});
+//     res.json(asset);
+// });
 
 
 

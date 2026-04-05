@@ -19,18 +19,24 @@ const extractFeeds = (outlines) => {
 };
 
 const getFeedsFromOPML = async () => {
-  const data = fs.readFileSync("./data/feeds.opml");
+  // const data = fs.readFileSync("./data/feeds.opml");
 
-  const result = await xml2js.parseStringPromise(data);
+  // const result = await xml2js.parseStringPromise(data);
 
-  const outlines = result.opml.body[0].outline;
+  // const outlines = result.opml.body[0].outline;
 
-  // ✅ Use recursive extraction
-  const feeds = extractFeeds(outlines);
+  // // ✅ Use recursive extraction
+  // const feeds = extractFeeds(outlines);
 
-  console.log("Total feeds extracted:", feeds.length);
+  // console.log("Total feeds extracted:", feeds.length);
 
-  return feeds;
+  // return feeds;
+
+   return [
+    "https://feeds.feedburner.com/TheHackersNews",
+    "https://www.bleepingcomputer.com/feed/",
+    "https://www.securityweek.com/feed/"
+  ];
 };
 
 module.exports = getFeedsFromOPML;
