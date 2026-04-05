@@ -1,0 +1,245 @@
+https://blog.qualys.com/feed|HTTP 403
+https://hacks.mozilla.org/feed/|HTTP 403
+https://api.anquanke.com/data/v1/rss|HTTP 473
+https://securityboulevard.com/feed/|HTTP 429
+http://tang3w.com/feed.xml|Connection Error
+https://sploitus.com/rss|Connection Error
+https://rsshub.app/aliyun/notice/2|HTTP 403
+https://rss.packetstormsecurity.com/files/|Connection Error
+https://cybernews.com/feed/|HTTP 403
+http://feed43.com/5146433407638526.xml|Connection Error
+http://feeds.feedburner.com/darknethackers|HTTP 403
+https://www.securityweek.com/feed/|HTTP 403
+https://utcc.utoronto.ca/~cks/space/blog/?atom|HTTP 403
+https://fabiensanglard.net/rss.xml|HTTP 406
+https://oldvcr.blogspot.com/feeds/posts/default|Timeout
+https://grantslatton.com/rss.xml|HTTP 404
+https://mjg59.dreamwidth.org/data/rss|Timeout
+https://rss.app/feeds/E5pQ7SXRZQVEiFuh.xml|HTTP 402
+https://rss.app/feeds/gURU8i2ldFzpwRCr.xml|HTTP 402
+https://rss.app/feeds/75Fpp0Mbx9x4TbDs.xml|HTTP 402
+https://www.theverge.com/rss/index.xml|HTTP 420
+https://www.qbitai.com/feed|HTTP 403
+https://sspai.com/feed|Timeout
+https://security.tencent.com/index.php/feed/blog/0|Timeout
+https://rsshub.zhengjim.com/nosec/hole|Timeout
+http://hackernews.cc/feed|Timeout
+https://www.solidot.org/index.rss|Timeout
+http://www.infosecurity-magazine.com/rss/news/|Timeout
+https://avleonov.com/feed/|Timeout
+https://fidelissecurity.com/feed/|HTTP 403
+https://www.redpacketsecurity.com/feed/|HTTP 403
+http://www.cnblogs.com/goodhacker/rss|Timeout
+http://blog.csdn.net/winsunxu/rss/list|Timeout
+https://nshipster.cn/feed.xml|Connection Error
+http://blog.csdn.net/L173864930/rss/list|HTTP 521
+https://feed43.com/1670770467135134.xml|Connection Error
+http://blog.csdn.net/su1216/rss/list|Timeout
+http://blog.csdn.net/u011069813/rss/list|Timeout
+http://forensics.spreitzenbarth.de/feed/|HTTP 403
+http://blog.csdn.net/kesalin/rss/list|HTTP 521
+https://www.hawkspawn.com/blog/feed.xml|Connection Error
+http://wangzz.github.io/atom.xml|Timeout
+http://blog.csdn.net/nokiaguy/rss/list|HTTP 521
+http://blog.flanker017.me/?feed=rss2&amp;lang=zh-cn|HTTP 403
+http://blog.csdn.net/nengx/rss/list|HTTP 521
+http://blog.csdn.net/Luoshengyang/rss/list|HTTP 521
+http://blog.azimuthsecurity.com/feeds/posts/default|Connection Error
+http://blog.csdn.net/pxb1988/rss/list|HTTP 521
+http://blog.csdn.net/laczff21/rss/list|Timeout
+http://www.laplinker.com/feeds/posts/default|Timeout
+http://smartphone-attack-vector.de/feed/|HTTP 403
+http://blog.csdn.net/Innost/rss/list|HTTP 521
+http://blog.csdn.net/21cnbao/rss/list|HTTP 521
+http://blog.csdn.net/Proteas/rss/list|HTTP 521
+http://blog.csdn.net/Roland_Sun/rss/list|HTTP 521
+http://blog.csdn.net/xianming01/rss/list|HTTP 521
+http://blog.csdn.net/qdsw123/rss/list|HTTP 521
+http://blog.csdn.net/xyz_lmn/rss/list|HTTP 521
+http://blog.csdn.net/conowen/rss/list|HTTP 521
+http://www.android-decompiler.com/blog/feed/|Timeout
+http://wufawei.com/feed/|Timeout
+http://blog.csdn.net/itudou_2010/rss/list|HTTP 521
+http://blog.csdn.net/dndxhej/rss/list|HTTP 521
+http://blog.csdn.net/lhj0711010212/rss/list|HTTP 521
+http://blog.csdn.net/zyc851224/rss/list|HTTP 521
+http://blog.csdn.net/aomandeshangxiao/rss/list|HTTP 521
+http://feed.cnblogs.com/blog/u/101485/rss|Timeout
+http://blog.csdn.net/autohacker/rss/list|HTTP 521
+http://feed.cnblogs.com/blog/u/98093/rss|Timeout
+http://blog.csdn.net/milado_nju/rss/list|HTTP 521
+https://www.nowsecure.com/feed/|HTTP 403
+http://blog.claudxiao.net/feed/|Connection Error
+http://hufeng825.github.io/atom.xml|Connection Error
+http://cnblogs.com/qiezi/rss|Timeout
+https://whereisk0shl.top/feed|HTTP 405
+https://feed43.com/6050116603104281.xml|Connection Error
+http://www.squarefree.com/feed/atom/|Timeout
+https://blog.exodusintel.com/feed/|HTTP 403
+https://o0xmuhe.github.io/atom.xml|Connection Error
+https://feed43.com/3621608176276825.xml|Connection Error
+http://blog.bjornweb.nl/feed.xml|Timeout
+https://feed43.com/1631438424656001.xml|Connection Error
+http://feed.cnblogs.com/blog/u/187775/rss|Timeout
+https://pwnies.com/feed/|HTTP 403
+http://blog.cr4.sh/feeds/posts/default|HTTP 403
+http://keenlab.tencent.com/en/atom.xml|Timeout
+https://0x48.pw/rss.xml|Connection Error
+http://blog.wuntee.sexy/atom.xml|Connection Error
+http://ctfhacker.com/feed.xml|HTTP 403
+http://eternalsakura13.com/atom.xml|HTTP 404
+http://wonderkun.cc/index.html/?feed=rss2|Connection Error
+http://marcoramilli.blogspot.com/feeds/posts/default|HTTP 401
+http://blog.void0red.top/pages/feed.xml|Connection Error
+http://vreugdenhilresearch.nl/feed/|HTTP 500
+https://blog.ropchain.com/feed/|Connection Error
+http://blog.csdn.net/u012528173/rss/list|HTTP 521
+http://p4nda.top/atom.xml|HTTP 520
+https://phoenhex.re/feed.xml|Connection Error
+https://blog.flanker017.me/feed/|Connection Error
+https://feed43.com/7741664325142083.xml|Connection Error
+https://feed43.com/5560170473384242.xml|Connection Error
+http://www.bendawang.site/rss.xml|Timeout
+https://sysexit.wordpress.com/feed/|Connection Error
+http://showlinkroom.me/atom.xml|Connection Error
+https://www.cnblogs.com/hac425/rss|Timeout
+https://fuzzing.kr/feed|Timeout
+https://mas0n.org/feed|HTTP 405
+https://christopherja.rocks/posts/index.xml|Connection Error
+https://outflank.nl/blog/feed/|HTTP 403
+http://avfisher.win/feed|Connection Error
+http://reedcorner.net/feed/|Timeout
+https://blog.blankshell.com/feed/|Connection Error
+https://pureqh.top/?feed=rss2|Connection Error
+https://www.hackingdream.net/feeds/posts/default?alt=rss|Connection Error
+https://blogs.forcepoint.com/rss.xml|Connection Error
+https://blog.grimm-co.com/feeds/posts/default?alt=rss|Connection Error
+https://evi1cg.me/atom.xml|Connection Error
+http://www.fireeye.com/blog/feed|HTTP 530
+https://blog.gdssecurity.com/labs/rss.xml|Timeout
+https://blog.c22.cc/feed/|Connection Error
+http://noahblog.360.cn/rss/|Connection Error
+http://www.remote-exploit.org/rss.xml|Timeout
+https://feed43.com/2363238175212207.xml|Connection Error
+https://fortynorthsecurity.com/blog/rss/|Connection Error
+http://resources.infosecinstitute.com/feed/|Connection Error
+http://rinige.com/index.php/feed|HTTP 403
+http://happytree.farbox.com/feed|Connection Error
+https://blog.ateam.qianxin.com/atom.xml|Connection Error
+http://rcoil.me/atom.xml|Connection Error
+https://www.guidepointsecurity.com/feed/|Timeout
+https://www.darknet.org.uk/feed/|Connection Error
+http://qqhack8.blog.163.com/rss/|Timeout
+https://feed43.com/5688068022162007.xml|Connection Error
+http://www.securitysift.com/?feed=rss|HTTP 406
+https://www.securitysift.com/feed/|HTTP 406
+http://fotis.loukos.me/blog/?feed=rss2|Connection Error
+https://mrd0x.com/rss.xml|Timeout
+https://www.nctry.com/feed|Timeout
+https://c99.sh/feed/|Connection Error
+https://blog.northshad0w.com/feed.xml|Connection Error
+https://lcx.cc/index.xml|Timeout
+https://miloserdov.org/?feed=rss2|Timeout
+https://zsecurity.org/feed/|HTTP 403
+https://www.hackingtutorials.org/feed/|Connection Error
+https://blog.pentesteracademy.com/feed|Timeout
+https://www.hackinn.com/index.php/feed/|Timeout
+https://rsshub.app/ieee-security/security-privacy|HTTP 403
+https://rsshub.app/usenix/usenix-security-sympoium|HTTP 403
+https://rsshub.app/ndss-symposium/ndss|HTTP 403
+https://rsshub.app/sigsac/ccs|HTTP 403
+https://rsshub.app/ieee/journal/10206|HTTP 403
+https://rsshub.app/ieee/journal/8858|HTTP 403
+http://blog.rewolf.pl/blog/?feed=rss2|Timeout
+http://0cx.cc/feed/|HTTP 403
+http://0xeb.net/feed/|HTTP 406
+https://www.vmray.com/feed/|HTTP 403
+https://funoverip.net/feed/|Connection Error
+http://ly0n.me/feed/|Connection Error
+https://thisissecurity.stormshield.com/feed/|Connection Error
+http://blog.avlsec.com/feed/|Timeout
+http://www.bugsafe.cn/feed/|Timeout
+http://pzhxbz.cn/?feed=rss2|Connection Error
+http://blog.csdn.net/magictong/rss/list|HTTP 521
+http://feed43.com/3078744558678360.xml|Connection Error
+http://www.zer0mem.sk/?feed=rss2|Connection Error
+http://theelectronjungle.com/feed.xml|Connection Error
+https://blog.csdn.net/whklhhhh/rss/list|HTTP 521
+http://blog.gdssecurity.com/labs/atom.xml|Timeout
+https://www.sonarsource.com/rss.xml|HTTP 404
+http://blog.ptsecurity.com/feeds/posts/default|Connection Error
+http://5alt.me/atom.xml|Connection Error
+http://blog.sucuri.net/feed|HTTP 403
+https://portswigger.net/research/rss|HTTP 404
+http://blog.neargle.com/atom.xml|Connection Error
+https://wonderkun.cc/atom.xml|Connection Error
+https://zonksec.com/home/feed/|HTTP 406
+https://landgrey.me/feed/|HTTP 502
+https://voidsec.com/category/blog/feed/|HTTP 412
+http://blog.csdn.net/mr_raptor/rss/list|HTTP 521
+https://altman.vip/atom.xml|Connection Error
+http://lvwei.me/feed|Timeout
+http://www.yiwang6.cn/index.php/feed/|Timeout
+http://feed43.com/cdxy-home.xml|Connection Error
+https://sillydaddy.me/atom.xml|Connection Error
+https://portswigger.net/blog/rss|HTTP 404
+https://websecuritys.cn/index.php/feed/|Timeout
+https://www.hackingarticles.in/feed/|Connection Error
+http://www.xmsec.cc/rss/|Timeout
+http://www.zerokeeper.com/feed/|HTTP 403
+http://mxny.org/feed|Connection Error
+https://www.ch1ng.com/blog/feed/rss.html|Timeout
+http://blog.portswigger.net/feeds/posts/default|HTTP 405
+http://brutelogic.com.br/blog/feed/|Connection Error
+https://cyto.top/atom.xml|Connection Error
+http://blog.csdn.net/u011721501/rss/list|HTTP 521
+http://blog.knownsec.com/feed/|Connection Error
+https://rsshub.app/nosec/threaten|HTTP 403
+https://www.symbo1.com/feed.xml|Connection Error
+http://www.netfairy.net/rss.php|Connection Error
+https://4ra1n.love/atom.xml|Connection Error
+https://hackademix.net/feed/|Connection Error
+https://bl4ck.in/feed.xml|HTTP 404
+http://r3start.net/index.php/feed|Timeout
+http://scodescanner.info/atom.xml|Connection Error
+https://www.ambionics.io/feeds/all.atom.xml|HTTP 404
+https://blog.bushwhackers.ru/rss/|Connection Error
+http://www.leesec.com/feed|HTTP 530
+https://www.gem-love.com/feed|Timeout
+http://blog.beefproject.com/feeds/posts/default|Connection Error
+https://www.guptashubham.com/feed/|Connection Error
+https://galnagli.com/feed.xml|HTTP 400
+http://marcin.jabrzyk.eu/feeds/all.atom.xml|Connection Error
+https://blog.vulnspy.com/atom.xml|Connection Error
+http://skysec.top/atom.xml|Timeout
+http://k1n9.me/atom.xml|Connection Error
+http://idoge.cc/index.php/feed|Connection Error
+http://www.wupco.cn/?feed=rss2|HTTP 400
+https://feed43.com/5364722478273212.xml|Connection Error
+http://www.pang0lin.com/?feed=rss2|HTTP 403
+http://rui0.cn/feed|Timeout
+https://lfysec.top/atom.xml|Connection Error
+https://www.praetorian.com/blog/feed|HTTP 403
+https://hacktech.cn/atom.xml|Connection Error
+https://checkmarx.com/feed/|HTTP 403
+https://www.redmango.top/rss/|Connection Error
+https://blog.jonlu.ca/feed.xml|Timeout
+https://webs3c.com/posts.rss|Connection Error
+https://www.sqlsec.com/atom.xml|Timeout
+https://gem-love.com/atom.xml|Timeout
+https://hpdoger.cn/atom.xml|Connection Error
+https://wulidecade.cn/index.xml|Timeout
+https://blog.qrzbing.cn/index.xml|HTTP 403
+http://codingo.io/feed.xml|Connection Error
+https://xnl-h4ck3r.uk/feed/|HTTP 403
+http://blog.m1kael.cn/index.php/feed/|Connection Error
+https://xmao.me/feed/|Connection Error
+https://payatu.com/wp-json/wp/v2/tags/61|HTTP 403
+https://exp10it.cn/index.xml|Connection Error
+https://souvikmp.com/index.xml|Connection Error
+https://rafa.hashnode.dev/rss.xml|HTTP 403
+https://www.mfmokbel.com/feed/|HTTP 406
+https://securingbits.com/rss.xml|HTTP 429
+https://blog.slonser.info/index.xml|Connection Error
+https://www.allysonomalley.com/feed/|HTTP 406
+https://rez0.blog/feed.xml|Connection Error
