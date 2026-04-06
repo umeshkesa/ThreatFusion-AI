@@ -1,34 +1,36 @@
+
 const Asset = require("../models/Asset");
+const matchProduct = require("../utils/matchProduct");
 
-// 🔥 Match extracted products with assets
 const matchAssets = async (extracted) => {
-  const matchedAssets = [];
-
-  if (!extracted.products || extracted.products.length === 0) {
-    return matchedAssets;
-  }
 
   const assets = await Asset.find();
+  const matches = [];
 
   for (let asset of assets) {
-    for (let sw of asset.software) {
-      const assetSoftware = sw.name.toLowerCase();
 
-      for (let product of extracted.products) {
-        if (assetSoftware.includes(product.toLowerCase())) {
-          matchedAssets.push({
-            assetId: asset._id,
-            assetName: asset.assetName,
-            matchedProduct: product,
-            version: sw.version,
-            criticality: asset.criticality
-          });
-        }
+    for (let software of asset.software) {
+      const products = Array.isArray(extracted?.products)
+        ? extracted.products
+        : [];
+
+      const result = matchProduct(software.name, products);
+
+      if (result.matched) {
+
+        matches.push({
+          assetId: asset._id,
+          assetName: asset.name,
+          matchedProduct: software.name,
+          version: software.version,
+          criticality: asset.criticality,
+          confidence: result.confidence
+        });
       }
     }
   }
 
-  return matchedAssets;
+  return matches;
 };
 
 module.exports = matchAssets;

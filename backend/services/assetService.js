@@ -1,4 +1,4 @@
-const Asset = require("../models/assetModel");
+const Asset = require("../models/Asset");
 
 // 🔹 Get all assets for a company
 const getAssetsByCompany = async (company_id) => {
@@ -9,7 +9,7 @@ const getAssetsByCompany = async (company_id) => {
 const findAssetsByName = async (company_id, name) => {
   return await Asset.find({
     company_id,
-    name: name.toLowerCase()
+    "software.name": name.toLowerCase()
   });
 };
 

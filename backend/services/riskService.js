@@ -1,37 +1,52 @@
-const calculateRisk = (feed, asset, cvss = 0, epss = 0, isKEV = false, hasExploitDB = false
-    ,malwareDetected = false
+const calculateRisk = (
+  feed,
+  asset,
+  cvss = 0,
+  epss = 0,
+  isKEV = false,
+  hasExploitDB = false,
+  malwareDetected = false
 ) => {
+
   let score = 0;
 
-  // Asset importance
+  // 🔥 1. Asset Criticality (max 40)
   if (asset.criticality === "HIGH") score += 40;
-  if (asset.criticality === "MEDIUM") score += 25;
-  if (asset.criticality === "LOW") score += 10;
+  else if (asset.criticality === "MEDIUM") score += 25;
+  else if (asset.criticality === "LOW") score += 10;
 
-  // CVSS contribution
-  score += cvss * 4; // 0–40
+  // 🔥 2. CVSS (0–40)
+  score += cvss * 4;
 
-
-  // vkg
-  if (malwareDetected) riskScore += 1;
-if (isKEV) riskScore += 1;
-
-// 🔥 NEW: indirect relation boost
-if (feed.indirectMatch) {
-  riskScore += 0.5;
-}
-  // EPSS contribution (0–1 → 0–30)
+  // 🔥 3. EPSS (0–30)
   score += epss * 30;
-     if (hasExploitDB) score += 25; // 🔥 exploit exists
-  if (isKEV) score += 30; // 🔥 BIG boost
 
-  // Keywords
-  const keywords = feed.extracted.keywords;
+  // 🔥 4. Exploit availability
+  if (hasExploitDB) score += 25;
+
+  // 🔥 5. KEV (real-world exploitation)
+  if (isKEV) score += 30;
+
+  // 🔥 6. Malware presence
+  if (malwareDetected) score += 25;
+
+  // 🔥 7. Keyword intelligence
+  const keywords = feed.extracted?.keywords || [];
 
   if (keywords.includes("exploit")) score += 15;
   if (keywords.includes("ransomware")) score += 20;
-    if (malwareDetected) score += 25;
 
+  // 🔥 8. INDIRECT MATCH (knowledge graph)
+  if (feed.indirectMatch) {
+    score += 5;   // small boost (not 0.5 → too small)
+  }
+
+  // 🔥 9. CONFIDENCE SCORE (NEW 🔥🔥🔥)
+  if (asset.confidence) {
+    score += asset.confidence * 10;  // max +10
+  }
+
+  // 🔥 10. Cap score
   if (score > 100) score = 100;
 
   return Math.round(score);
