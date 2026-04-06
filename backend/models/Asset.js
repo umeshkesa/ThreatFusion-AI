@@ -14,8 +14,9 @@ const assetSchema = new mongoose.Schema({
     type: String,
     enum: ["LOW", "MEDIUM", "HIGH"],
     default: "MEDIUM"
-  }
+  },
+  company_id: String,
 
 }, { timestamps: true });
 
-module.exports = mongoose.model("Asset", assetSchema);
+module.exports = mongoose.models.Asset || mongoose.model("Asset", assetSchema);

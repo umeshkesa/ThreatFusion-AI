@@ -1,6 +1,12 @@
 const nlp = require("compromise");
 const productDictionary = require("../utils/productDictionary");
 
+// 🔹 Extract loose version (e.g., "version 1.2.3")
+const extractLooseVersion = (text) => {
+  const match = text.match(/version\s?([\d\.]+)/);
+  return match ? match[1] : null;
+};
+
 // 🔹 Extract version (single operator)
 const extractVersionInfo = (text) => {
   const patterns = [
@@ -41,23 +47,17 @@ const extractVersionRange = (text) => {
   return null;
 };
 
-// 🔹 NLP-based product extraction
-const extractProductsNLP = (text) => {
-  const doc = nlp(text);
-  const nouns = doc.nouns().out("array");
-
+// 🔹 Product extraction using dictionary (STRONGER than NLP nouns)
+const extractProducts = (text) => {
   const foundProducts = new Set();
+  const lowerText = text.toLowerCase();
 
-  for (let word of nouns) {
-    const lower = word.toLowerCase();
+  for (let key in productDictionary) {
+    const aliases = productDictionary[key];
 
-    for (let key in productDictionary) {
-      const aliases = productDictionary[key];
-
-      for (let alias of aliases) {
-        if (lower.includes(alias)) {
-          foundProducts.add(key);
-        }
+    for (let alias of aliases) {
+      if (lowerText.includes(alias.toLowerCase())) {
+        foundProducts.add(key);
       }
     }
   }
@@ -65,6 +65,7 @@ const extractProductsNLP = (text) => {
   return Array.from(foundProducts);
 };
 
+// 🔹 MAIN EXTRACTION FUNCTION
 const extractData = (text) => {
   if (!text) {
     return {
@@ -74,49 +75,53 @@ const extractData = (text) => {
     };
   }
 
-  // 🔹 Normalize text using NLP
+  // 🔹 Normalize text
   const cleanedText = nlp(text).normalize().out("text").toLowerCase();
 
-  // 🔹 CVE extraction
-  const cveRegex = /cve-\d{4}-\d+/g;
+  // 🔹 Loose version detection
+  const looseVersion = extractLooseVersion(cleanedText);
+
+  // 🔹 CVE extraction (IMPROVED)
+  const cveRegex = /CVE-\d{4}-\d{4,7}/gi;
   const cveIds = cleanedText.match(cveRegex) || [];
 
   // 🔹 Keywords
   const keywordsList = ["exploit", "vulnerability", "malware", "ransomware", "attack"];
   const keywords = keywordsList.filter(word => cleanedText.includes(word));
 
-  // 🔥 NLP Product Detection
-  const products = extractProductsNLP(cleanedText);
+  // 🔹 Product detection
+  const products = extractProducts(cleanedText);
 
-  // 🔥 Version detection
+  // 🔹 Version detection
   const versionInfo = extractVersionInfo(cleanedText);
 
-  // 🔥 Version range detection
+  // 🔹 Version range detection
   const versionRange = extractVersionRange(cleanedText);
 
+  // 🔹 Knowledge Graph Expansion
   const knowledgeGraph = require("../utils/knowledgeGraph");
 
-const expandedProducts = new Set(products);
+  const expandedProducts = new Set(products);
 
-for (let prod of products) {
-  const relations = knowledgeGraph[prod];
+  for (let prod of products) {
+    const relations = knowledgeGraph[prod];
 
-  if (relations) {
-    Object.values(relations).flat().forEach(rel => {
-      expandedProducts.add(rel);
-    });
+    if (relations) {
+      Object.values(relations).flat().forEach(rel => {
+        expandedProducts.add(rel);
+      });
+    }
   }
-}
 
-const finalProducts = Array.from(expandedProducts);
+  const finalProducts = Array.from(expandedProducts);
 
   return {
-    products,
+    products: finalProducts,
     cveIds,
     keywords,
-    version: versionInfo.version,
+    version: versionInfo.version || looseVersion,
     operator: versionInfo.operator,
-    versionRange // 🔥 new
+    versionRange
   };
 };
 

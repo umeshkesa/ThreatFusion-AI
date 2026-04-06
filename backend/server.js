@@ -35,6 +35,7 @@ connectDB();
 
 
 
+
 const app = express();
 
 app.use(express.json());
@@ -86,7 +87,7 @@ app.get("/fetch-feeds", async (req, res) => {
         const allFeeds = await getFeedsFromOPML();
 
         // 🔥 Limit feeds (example: 50)
-        const shuffled = allFeeds.sort(() => 0.5 - Math.random());
+        const shuffled =[...allFeeds].sort(() => 0.5 - Math.random());
         const feedUrls = shuffled.slice(0, 50);
         const items = await fetchRSS(feedUrls);
 
@@ -94,14 +95,13 @@ app.get("/fetch-feeds", async (req, res) => {
 
         for (let item of items) {
             const exists = await Feed.findOne({ url: item.link });
-             console.log("\n📰 TITLE:", item.title);
+            console.log("\n📰 TITLE:", item.title);
 
-    const extracted = extractData(item.title + " " + item.contentSnippet);
+            const extracted = extractData(item.title + " " + item.contentSnippet);
 
-    console.log("🔍 EXTRACTED:", extracted);
+            console.log("🔍 EXTRACTED:", extracted);
 
             if (!exists) {
-                const extracted = extractData(item.title + " " + item.contentSnippet);
 
                 const newFeed = await Feed.create({
                     source: "RSS",
@@ -113,8 +113,17 @@ app.get("/fetch-feeds", async (req, res) => {
                 });
 
                 // 🔥 Generate alerts
-               await generateAlerts(newFeed, kevSet, malwareData);
+                await generateAlerts(newFeed, kevSet, malwareData);
+
+                if (
+    extracted.cveIds.length === 0 &&
+    extracted.products.length === 0 &&
+    extracted.keywords.length === 0
+) {
+    continue;
+}
                 saved++;
+                console.log("✅ SAVED:", item.title);
             }
         }
 
@@ -128,6 +137,8 @@ app.get("/fetch-feeds", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
 
 const Alert = require("./models/Alert");
 
@@ -158,7 +169,21 @@ app.get("/alerts", async (req, res) => {
 //     res.json(asset);
 // });
 
+const Asset = require("./models/Asset");
 
+app.get("/add-test-asset", async (req, res) => {
+    const asset = await Asset.create({
+        assetName: "Mobile Device",
+        software: [
+            { name: "android", version: "13" },
+            { name: "chrome", version: "120" }
+        ],
+        criticality: "HIGH",
+        company_id: "company_123"
+    });
+
+    res.json(asset);
+});
 
 const PORT = process.env.PORT || 5000;
 

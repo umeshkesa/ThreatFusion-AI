@@ -36,5 +36,6 @@ const feedSchema = new mongoose.Schema({
   }
 
 }, { timestamps: true });
+feedSchema.index({ title: 1 }, { unique: true });
 
-module.exports = mongoose.model("Feed", feedSchema);
+module.exports = mongoose.models.Feed || mongoose.model("Feed", feedSchema);
