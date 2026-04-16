@@ -18,8 +18,24 @@ const addAsset = async (data) => {
   return await Asset.create(data);
 };
 
+// 🔹 Delete asset
+const deleteAsset = async (id) => {
+  return await Asset.findByIdAndDelete(id);
+};
+
+// 🔹 Delete software from asset
+const deleteSoftware = async (assetId, softwareId) => {
+  return await Asset.findByIdAndUpdate(
+    assetId,
+    { $pull: { software: { _id: softwareId } } },
+    { new: true }
+  );
+};
+
 module.exports = {
   getAssetsByCompany,
   findAssetsByName,
-  addAsset
+  addAsset,
+  deleteAsset,
+  deleteSoftware
 };

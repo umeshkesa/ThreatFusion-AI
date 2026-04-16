@@ -139,34 +139,28 @@ app.get("/run-alerts", async (req, res) => {  // ✅ only once
 // Seed test assets
 app.get("/seed-assets", async (req, res) => {
     try {
-        await Asset.insertMany([
+        const testAssets = [
             { assetName: "Web Server", software: [{ name: "apache", version: "2.4.51" }, { name: "openssl", version: "1.1.1" }], criticality: "HIGH", company_id: "company_123" },
             { assetName: "Corp Laptops", software: [{ name: "chrome", version: "119" }, { name: "windows", version: "10" }], criticality: "HIGH", company_id: "company_123" },
             { assetName: "Network", software: [{ name: "cisco", version: "15.2" }, { name: "fortinet", version: "7.0" }], criticality: "HIGH", company_id: "company_123" },
             { assetName: "Mobile Fleet", software: [{ name: "android", version: "13" }, { name: "ios", version: "17" }], criticality: "MEDIUM", company_id: "company_123" },
-        ]);
-        res.json({ message: "Assets seeded ✅" });
+        ];
+
+        let added = 0;
+        for (let a of testAssets) {
+            const exists = await Asset.findOne({ assetName: a.assetName, company_id: a.company_id });
+            if (!exists) {
+                await Asset.create(a);
+                added++;
+            }
+        }
+        res.json({ message: "Seed complete", newAssets: added });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-app.get("/add-test-asset", async (req, res) => {
-    try {
-        const asset = await Asset.create({
-            assetName: "Mobile Device",
-            software: [
-                { name: "android", version: "13" },
-                { name: "chrome", version: "120" }
-            ],
-            criticality: "HIGH",
-            company_id: "company_123"
-        });
-        res.json(asset);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

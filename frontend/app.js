@@ -22,6 +22,13 @@ const api = {
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json();
   },
+  async delete(path) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: "DELETE"
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
 
   healthCheck() { return this.get("/api/health"); },
   fetchFeeds() { return this.get("/fetch-feeds"); },
@@ -30,6 +37,8 @@ const api = {
   seedAssets() { return this.get("/seed-assets"); },
   getAssets() { return this.get(`/api/assets/${COMPANY_ID}`); },
   addAsset(data) { return this.post("/api/assets/add", data); },
+  deleteAsset(id) { return this.delete(`/api/assets/delete/${id}`); },
+  deleteSoftware(assetId, softwareId) { return this.delete(`/api/assets/${assetId}/software/${softwareId}`); },
   getFeeds() { return this.get("/api/feeds"); }
 };
 
@@ -692,7 +701,14 @@ async function loadAssets() {
     grid.innerHTML = state.assets.map(a => `
       <div class="asset-card">
         <div class="asset-card-header">
-          <span class="asset-name">${escapeHtml(a.assetName)}</span>
+          <div style="flex:1;">
+            <div class="asset-name" style="display:flex; align-items:center; gap:10px;">
+              ${escapeHtml(a.assetName)}
+              <button class="btn-icon-delete" onclick="handleDeleteAsset('${a._id}')" title="Delete Asset">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
           <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
             <span style="font-size:0.65rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">Criticality</span>
             ${priorityBadge(a.criticality)}
@@ -700,9 +716,12 @@ async function loadAssets() {
         </div>
         <ul class="asset-software-list">
           ${(a.software || []).map(s => `
-            <li class="asset-software-item">
-              <span class="software-name">${escapeHtml(s.name)}</span>
-              <span class="software-version">v${escapeHtml(s.version)}</span>
+            <li class="asset-software-item" style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span class="software-name">${escapeHtml(s.name)}</span>
+                <span class="software-version">v${escapeHtml(s.version)}</span>
+              </div>
+              <button class="sw-delete-btn" onclick="handleDeleteSoftware('${a._id}', '${s._id}')" title="Remove software">×</button>
             </li>
           `).join("")}
         </ul>
@@ -713,6 +732,27 @@ async function loadAssets() {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
       <h3>Failed to load assets</h3><p>${escapeHtml(err.message)}</p>
     </div>`;
+  }
+}
+
+async function handleDeleteAsset(id) {
+  if (!confirm("Are you sure you want to delete this asset? This cannot be undone.")) return;
+  try {
+    await api.deleteAsset(id);
+    showToast("Asset deleted successfully", "success");
+    loadAssets();
+  } catch (err) {
+    showToast("Failed to delete asset: " + err.message, "error");
+  }
+}
+
+async function handleDeleteSoftware(assetId, softwareId) {
+  try {
+    await api.deleteSoftware(assetId, softwareId);
+    showToast("Software removed", "success");
+    loadAssets();
+  } catch (err) {
+    showToast("Failed to remove software: " + err.message, "error");
   }
 }
 
