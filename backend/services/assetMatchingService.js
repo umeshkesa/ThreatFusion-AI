@@ -4,7 +4,7 @@ const matchProduct = require("../utils/matchProduct");
 
 const matchAssets = async (extracted) => {
 
-  const assets = await Asset.find();
+  const assets = await Asset.find().lean();
   const matches = [];
 
   for (let asset of assets) {
