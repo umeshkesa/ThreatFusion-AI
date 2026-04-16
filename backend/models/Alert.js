@@ -34,6 +34,11 @@ const alertSchema = new mongoose.Schema({
     type: String,
     enum: ["OPEN", "RESOLVED"],
     default: "OPEN"
+  },
+
+  company_id: {
+    type: String,
+    index: true
   }
 
 }, { timestamps: true });

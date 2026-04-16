@@ -1,12 +1,12 @@
-
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
 const connectDB = require("./config/db");
 const Feed = require("./models/Feed");
-const Asset = require("./models/Asset");        // ← moved to top
-const Alert = require("./models/Alert");        // ← moved to top
+const Asset = require("./models/Asset");
+const Alert = require("./models/Alert");
+const Company = require("./models/Company");
 const getFeedsFromOPML = require("./services/opmlService");
 const fetchRSS = require("./services/rssService");
 const extractData = require("./services/extractionService");
@@ -36,6 +36,30 @@ let malwareData = [];
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Auth Endpoints
+app.post("/api/auth/register", async (req, res) => {
+    try {
+        const { name, password } = req.body;
+        const company_id = "comp_" + Math.random().toString(36).substr(2, 9);
+        const company = await Company.create({ name, password, company_id });
+        res.json({ message: "Registration successful", company_id: company.company_id });
+    } catch (err) {
+        res.status(500).json({ error: "Company name already exists" });
+    }
+});
+
+app.post("/api/auth/login", async (req, res) => {
+    try {
+        const { name, password } = req.body;
+        const company = await Company.findOne({ name, password });
+        if (!company) return res.status(401).json({ error: "Invalid credentials" });
+        res.json({ company_id: company.company_id, name: company.name });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.use("/api/assets", assetRoutes);
 
 // Serve frontend
@@ -89,7 +113,11 @@ app.get("/fetch-feeds", async (req, res) => {
                     extracted
                 });
 
-                await generateAlerts(newFeed, kevSet, malwareData);
+                // generate alerts for ALL companies that have assets
+                const companies = await Company.find();
+                for (const company of companies) {
+                    await generateAlerts(newFeed, kevSet, malwareData, company.company_id);
+                }
                 saved++;
                 console.log("✅ SAVED:", item.title);
             }
@@ -106,28 +134,26 @@ app.get("/fetch-feeds", async (req, res) => {
     }
 });
 
-// Get alerts (optional ?priority=CRITICAL,HIGH filter)
-app.get("/alerts", async (req, res) => {
+// Get alerts for a specific company
+app.get("/alerts/:company_id", async (req, res) => {
     try {
-        const filter = {};
-        if (req.query.priority) {
-            filter.priority = { $in: req.query.priority.split(",") };
-        }
-        const alerts = await Alert.find(filter).sort({ riskScore: -1 });
+        const { company_id } = req.params;
+        const alerts = await Alert.find({ company_id }).sort({ riskScore: -1 });
         res.json(alerts);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Run alerts on existing feeds
-app.get("/run-alerts", async (req, res) => {  // ✅ only once
+// Run alerts on existing feeds for a specific company
+app.get("/run-alerts/:company_id", async (req, res) => {
     try {
+        const { company_id } = req.params;
         const feeds = await Feed.find({ "extracted.products": { $exists: true, $ne: [] } });
         let count = 0;
         for (let feed of feeds) {
-            console.log("🚀 Calling generateAlerts...");
-            const alerts = await generateAlerts(feed, kevSet, malwareData);
+            console.log("🚀 Calling generateAlerts for", company_id);
+            const alerts = await generateAlerts(feed, kevSet, malwareData, company_id);
             count += alerts.length;
         }
         res.json({ message: "Alerts generated", total: count });
@@ -136,14 +162,15 @@ app.get("/run-alerts", async (req, res) => {  // ✅ only once
     }
 });
 
-// Seed test assets
-app.get("/seed-assets", async (req, res) => {
+// Seed test assets for a specific company
+app.get("/seed-assets/:company_id", async (req, res) => {
     try {
+        const { company_id } = req.params;
         const testAssets = [
-            { assetName: "Web Server", software: [{ name: "apache", version: "2.4.51" }, { name: "openssl", version: "1.1.1" }], criticality: "HIGH", company_id: "company_123" },
-            { assetName: "Corp Laptops", software: [{ name: "chrome", version: "119" }, { name: "windows", version: "10" }], criticality: "HIGH", company_id: "company_123" },
-            { assetName: "Network", software: [{ name: "cisco", version: "15.2" }, { name: "fortinet", version: "7.0" }], criticality: "HIGH", company_id: "company_123" },
-            { assetName: "Mobile Fleet", software: [{ name: "android", version: "13" }, { name: "ios", version: "17" }], criticality: "MEDIUM", company_id: "company_123" },
+            { assetName: "Web Server", software: [{ name: "apache", version: "2.4.51" }, { name: "openssl", version: "1.1.1" }], criticality: "HIGH", company_id },
+            { assetName: "Corp Laptops", software: [{ name: "chrome", version: "119" }, { name: "windows", version: "10" }], criticality: "HIGH", company_id },
+            { assetName: "Network", software: [{ name: "cisco", version: "15.2" }, { name: "fortinet", version: "7.0" }], criticality: "HIGH", company_id },
+            { assetName: "Mobile Fleet", software: [{ name: "android", version: "13" }, { name: "ios", version: "17" }], criticality: "MEDIUM", company_id },
         ];
 
         let added = 0;
@@ -154,7 +181,7 @@ app.get("/seed-assets", async (req, res) => {
                 added++;
             }
         }
-        res.json({ message: "Seed complete", newAssets: added });
+        res.json({ message: "Seed complete for " + company_id, newAssets: added });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -15,7 +15,36 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 
-<body>
+<body class="login-hidden">
+  <!-- Authentication Overlay -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="brand-icon" style="margin: 0 auto 15px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <h2 id="auth-title">Welcome Back</h2>
+        <p id="auth-subtitle">Login to access your Threat Intelligence</p>
+      </div>
+      <div class="auth-body">
+        <div class="form-group">
+          <label class="form-label">Company Name</label>
+          <input type="text" id="login-name" class="form-input" placeholder="Enter company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+        </div>
+        <button id="btn-login" class="btn btn-primary" style="width:100%; margin-top:10px;">Login</button>
+        <div style="text-align:center; margin-top:15px; font-size:0.85rem; color:var(--text-secondary);">
+          Don't have an account? <a href="#" id="toggle-auth" style="color:var(--accent-cyan); text-decoration:none; font-weight:600;">Register here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Sidebar Navigation -->
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-brand">
@@ -96,6 +125,12 @@
       <div class="server-status" id="server-status">
         <span class="status-dot offline"></span>
         <span class="status-text">Checking...</span>
+      </div>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border-primary);">
+        <button id="btn-logout" class="btn btn-danger" style="width:100%; padding: 8px; font-size:0.8rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </button>
       </div>
     </div>
   </nav>

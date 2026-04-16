@@ -3,7 +3,7 @@
    ======================================== */
 
 const API_BASE = window.location.origin;
-const COMPANY_ID = "company_123";
+// COMPANY_ID is now dynamic from state.companyId
 
 // ==================== API SERVICE ====================
 
@@ -32,14 +32,18 @@ const api = {
 
   healthCheck() { return this.get("/api/health"); },
   fetchFeeds() { return this.get("/fetch-feeds"); },
-  getAlerts() { return this.get("/alerts"); },
-  runAlerts() { return this.get("/run-alerts"); },
-  seedAssets() { return this.get("/seed-assets"); },
-  getAssets() { return this.get(`/api/assets/${COMPANY_ID}`); },
+  getAlerts() { return this.get(`/alerts/${state.companyId}`); },
+  runAlerts() { return this.get(`/run-alerts/${state.companyId}`); },
+  seedAssets() { return this.get(`/seed-assets/${state.companyId}`); },
+  getAssets() { return this.get(`/api/assets/${state.companyId}`); },
   addAsset(data) { return this.post("/api/assets/add", data); },
   deleteAsset(id) { return this.delete(`/api/assets/delete/${id}`); },
   deleteSoftware(assetId, softwareId) { return this.delete(`/api/assets/${assetId}/software/${softwareId}`); },
-  getFeeds() { return this.get("/api/feeds"); }
+  getFeeds() { return this.get("/api/feeds"); },
+  
+  // Auth
+  login(name, password) { return this.post("/api/auth/login", { name, password }); },
+  register(name, password) { return this.post("/api/auth/register", { name, password }); }
 };
 
 // ==================== STATE ====================
@@ -48,7 +52,10 @@ let state = {
   currentPage: "dashboard",
   alerts: [],
   assets: [],
-  feeds: []
+  feeds: [],
+  companyId: localStorage.getItem("company_id"),
+  companyName: localStorage.getItem("company_name"),
+  isRegistering: false
 };
 
 // ==================== ROUTER ====================
@@ -189,7 +196,7 @@ async function renderFeeds(container) {
 
     // 🔥 Auto-expand deep-linked feed
     if (state.autoExpandFeedId) {
-      const idx = feeds.findIndex(f => f._id === state.autoExpandFeedId);
+      const idx = feeds.findIndex(f => String(f._id) === String(state.autoExpandFeedId));
       if (idx !== -1) {
         setTimeout(() => {
           toggleFeedDetails(idx.toString());
@@ -524,7 +531,7 @@ function renderAlertTable(filter) {
                    </div>
                 </div>
                 <div style="margin-top: 15px;">
-                   <button class="btn btn-primary" style="font-size:0.75rem; padding: 6px 12px;" onclick="viewSourceFeed('${a.feedId}')">View Source Feed</button>
+                   <button class="btn btn-primary" style="font-size:0.75rem; padding: 6px 12px;" onclick="viewSourceFeed('${a.feedId?._id || a.feedId}')">View Source Feed</button>
                    <button class="btn btn-secondary" style="font-size:0.75rem; padding: 6px 12px; margin-left:8px;">Mark as Resolved</button>
                 </div>
               </div>
@@ -582,8 +589,8 @@ async function renderAssets(container) {
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Company ID</label>
-            <input class="form-input" id="asset-company" value="company_123" />
+            <label class="form-label">Company</label>
+            <input class="form-input" value="${state.companyName || state.companyId}" readonly style="opacity:0.7; cursor:not-allowed;" />
           </div>
         </div>
 
@@ -629,7 +636,7 @@ async function renderAssets(container) {
   document.getElementById("btn-create-asset").addEventListener("click", async () => {
     const name = document.getElementById("asset-name").value.trim();
     const criticality = document.getElementById("asset-criticality").value;
-    const company_id = document.getElementById("asset-company").value.trim();
+    const company_id = state.companyId; // ✅ always use logged-in company
 
     if (!name) { showToast("Asset name required", "error"); return; }
 
@@ -1036,13 +1043,89 @@ function initTheme() {
   });
 }
 
+// ==================== AUTHENTICATION ====================
+
+function initAuth() {
+  const overlay = document.getElementById("auth-overlay");
+  const loginBtn = document.getElementById("btn-login");
+  const logoutBtn = document.getElementById("btn-logout");
+  const toggleLink = document.getElementById("toggle-auth");
+  const authTitle = document.getElementById("auth-title");
+  const authSubtitle = document.getElementById("auth-subtitle");
+
+  // Check initial state
+  if (state.companyId) {
+    document.body.classList.remove("login-hidden");
+    overlay.style.display = "none";
+  }
+
+  toggleLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    state.isRegistering = !state.isRegistering;
+    authTitle.textContent = state.isRegistering ? "Create Account" : "Welcome Back";
+    authSubtitle.textContent = state.isRegistering ? "Register your company to start monitoring threats" : "Login to access your Threat Intelligence";
+    loginBtn.textContent = state.isRegistering ? "Register Content" : "Login";
+    toggleLink.textContent = state.isRegistering ? "Back to Login" : "Register here";
+  });
+
+  loginBtn.addEventListener("click", async () => {
+    const name = document.getElementById("login-name").value.trim();
+    const password = document.getElementById("login-password").value.trim();
+
+    if (!name || !password) {
+      showToast("Please fill all fields", "error");
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<span class="spinner"></span> Processing...';
+
+    try {
+      let res;
+      if (state.isRegistering) {
+        res = await api.register(name, password);
+        showToast("Registration successful! Logging you in...", "success");
+      }
+      
+      // Auto-login after registration or direct login
+      res = await api.login(name, password);
+      
+      localStorage.setItem("company_id", res.company_id);
+      localStorage.setItem("company_name", res.name);
+      state.companyId = res.company_id;
+      state.companyName = res.name;
+
+      showToast(`Welcome, ${res.name}`, "success");
+      document.body.classList.remove("login-hidden");
+      overlay.style.display = "none";
+      navigateTo("dashboard");
+
+    } catch (err) {
+      showToast(err.message.includes("401") ? "Invalid credentials" : "Auth failed: " + err.message, "error");
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = state.isRegistering ? "Register" : "Login";
+    }
+  });
+
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("company_id");
+    localStorage.removeItem("company_name");
+    location.reload();
+  });
+}
+
 // ==================== INIT ====================
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   initRouter();
+  initAuth();
   startClock();
   checkServerStatus();
   setInterval(checkServerStatus, 15000);
-  navigateTo("dashboard");
+  
+  if (state.companyId) {
+    navigateTo("dashboard");
+  }
 });

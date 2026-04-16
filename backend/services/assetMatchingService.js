@@ -2,9 +2,11 @@
 const Asset = require("../models/Asset");
 const matchProduct = require("../utils/matchProduct");
 
-const matchAssets = async (extracted) => {
+// company_id filters assets to only the owning company
+const matchAssets = async (extracted, company_id) => {
 
-  const assets = await Asset.find().lean();
+  const query = company_id ? { company_id } : {};
+  const assets = await Asset.find(query).lean();
   const matches = [];
 
   for (let asset of assets) {
