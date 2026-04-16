@@ -25,9 +25,17 @@ const feedSchema = new mongoose.Schema({
   },
 
   extracted: {
-    software: [String],
+    products: [String],
     cveIds: [String],
-    keywords: [String]
+    version: String,
+    operator: String,
+    keywords: [String],
+    versionRange: {
+      min_version: String,
+      min_operator: String,
+      max_version: String,
+      max_operator: String
+    }
   },
 
   processed: {

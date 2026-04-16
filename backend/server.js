@@ -2,6 +2,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
 const connectDB = require("./config/db");
 const Feed = require("./models/Feed");
 const Asset = require("./models/Asset");        // ← moved to top
@@ -37,8 +38,21 @@ app.use(express.json());
 app.use(cors());
 app.use("/api/assets", assetRoutes);
 
-app.get("/", (req, res) => {
+// Serve frontend
+app.use(express.static(path.join(__dirname, "../frontend")));
+
+app.get("/api/health", (req, res) => {
     res.send("API Running 🚀");
+});
+
+// Get saved feeds
+app.get("/api/feeds", async (req, res) => {
+    try {
+        const feeds = await Feed.find().sort({ createdAt: -1 }).limit(50);
+        res.json(feeds);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Fetch feeds from OPML → RSS → DB → Alerts
@@ -92,13 +106,14 @@ app.get("/fetch-feeds", async (req, res) => {
     }
 });
 
-// Get HIGH/CRITICAL alerts
+// Get alerts (optional ?priority=CRITICAL,HIGH filter)
 app.get("/alerts", async (req, res) => {
     try {
-        const alerts = await Alert.find({
-            priority: { $in: ["CRITICAL", "HIGH"] }
-        }).sort({ riskScore: -1 });
-
+        const filter = {};
+        if (req.query.priority) {
+            filter.priority = { $in: req.query.priority.split(",") };
+        }
+        const alerts = await Alert.find(filter).sort({ riskScore: -1 });
         res.json(alerts);
     } catch (err) {
         res.status(500).json({ error: err.message });

@@ -10,11 +10,18 @@ const alertSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Asset"
   },
+
+  // Structured threat data
+  product: String,
+  assetName: String,
+  asset_version: String,
+  cveIds: [String],
+
   priority: {
-  type: String,
-  enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
-},
-    malwareDetected: Boolean,
+    type: String,
+    enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+  },
+  malwareDetected: Boolean,
   kev: Boolean,
   severity: String,
   epss: Number,

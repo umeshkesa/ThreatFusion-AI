@@ -9,10 +9,10 @@ const { isVersionVulnerable, isVersionInRange } = require("../utils/versionUtils
 const matchAssets = require("./assetMatchingService");
 
 const generateAlerts = async (feed, kevSet, malwareData) => {
-console.log("🔥 FULL FEED:", JSON.stringify(feed, null, 2));
+    console.log("🔥 FULL FEED:", JSON.stringify(feed, null, 2));
     console.log("🔥 generateAlerts CALLED");
     const company_id = "company_123";
-   const extracted = JSON.parse(JSON.stringify(feed.extracted || {}));
+    const extracted = JSON.parse(JSON.stringify(feed.extracted || {}));
 
     console.log("🔎 Extracted:", extracted);
     console.log("🧪 extracted.products:", extracted?.products);
@@ -103,7 +103,9 @@ console.log("🔥 FULL FEED:", JSON.stringify(feed, null, 2));
             feedId: feed._id,
             assetId: match.assetId,
             product: match.matchedProduct,
+            assetName: match.assetName,
             asset_version: match.version,
+            cveIds: extracted?.cveIds || [],
             severity: match.criticality,
             riskScore,
             priority,

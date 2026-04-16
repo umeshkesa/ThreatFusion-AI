@@ -20,7 +20,7 @@ const matchAssets = async (extracted) => {
 
         matches.push({
           assetId: asset._id,
-          assetName: asset.name,
+          assetName: asset.assetName,
           matchedProduct: software.name,
           version: software.version,
           criticality: asset.criticality,
