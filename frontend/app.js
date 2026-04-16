@@ -177,6 +177,20 @@ async function renderFeeds(container) {
         `).join("")}
       </div>
     `;
+
+    // 🔥 Auto-expand deep-linked feed
+    if (state.autoExpandFeedId) {
+      const idx = feeds.findIndex(f => f._id === state.autoExpandFeedId);
+      if (idx !== -1) {
+        setTimeout(() => {
+          toggleFeedDetails(idx.toString());
+          const el = document.getElementById(`details-${idx}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+      state.autoExpandFeedId = null; // reset
+    }
+
   } catch (err) {
     document.getElementById("feeds-table-body").innerHTML = 
       `<div class="empty-state"><h3>Failed to load feeds</h3><p>${escapeHtml(err.message)}</p></div>`;
@@ -433,42 +447,103 @@ function renderAlertTable(filter) {
   }
 
   body.innerHTML = `
-    <table class="data-table">
-      <thead><tr>
-        <th>Priority</th>
-        <th>Risk Score</th>
-        <th>Asset</th>
-        <th>Product</th>
-        <th>Version</th>
-        <th>CVE IDs</th>
-        <th>CVSS</th>
-        <th>EPSS</th>
-        <th>KEV</th>
-        <th>Exploit</th>
-        <th>Malware</th>
-        <th>Status</th>
-      </tr></thead>
-      <tbody>
-        ${alerts.map(a => `
-          <tr>
-            <td>${priorityBadge(a.priority)}</td>
-            <td>${riskBar(a.riskScore)}</td>
-            <td><span style="font-weight:600;color:var(--text-primary);">${escapeHtml(a.assetName || a.message?.split(" ")[0] || "—")}</span></td>
-            <td><span class="badge badge-medium" style="border:none;background:var(--accent-purple-dim);color:var(--accent-purple);">${escapeHtml(a.product || "—")}</span></td>
-            <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--accent-cyan);">${a.asset_version ? "v" + escapeHtml(a.asset_version) : "—"}</span></td>
-            <td>${(a.cveIds && a.cveIds.length > 0) ? a.cveIds.map(c => `<span style="display:inline-block;font-family:'JetBrains Mono',monospace;font-size:0.72rem;background:var(--accent-red-dim);color:var(--accent-red);padding:2px 6px;border-radius:4px;margin:1px 2px;">${escapeHtml(c)}</span>`).join("") : "<span class='bool-false'>—</span>"}</td>
-            <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${a.cvss != null ? a.cvss.toFixed(1) : "—"}</span></td>
-            <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${a.epss != null ? (a.epss * 100).toFixed(1) + "%" : "—"}</span></td>
-            <td>${boolIcon(a.kev)}</td>
-            <td>${boolIcon(a.exploitAvailable)}</td>
-            <td>${boolIcon(a.malwareDetected)}</td>
-            <td><span class="badge ${a.status === 'OPEN' ? 'badge-high' : 'badge-low'}">${a.status || "OPEN"}</span></td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
+    <div class="alerts-list">
+      ${alerts.map((a, i) => `
+        <div class="section-card alert-item" style="margin-bottom: 12px; border-left: 4px solid ${a.priority === 'CRITICAL' ? 'var(--critical)' : (a.priority === 'HIGH' ? 'var(--high)' : (a.priority === 'MEDIUM' ? 'var(--medium)' : 'var(--low)'))};">
+          <div class="alert-summary" style="padding: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleAlertDetails('${i}')">
+            <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+              ${priorityBadge(a.priority)}
+              <div style="flex: 1;">
+                <div style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">${escapeHtml(a.assetName)} — ${escapeHtml(a.product)} ${a.asset_version ? 'v' + a.asset_version : ''}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Detected: ${new Date(a.createdAt).toLocaleString()}</div>
+              </div>
+              <div style="width: 100px;">
+                ${riskBar(a.riskScore)}
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-left: 20px;">
+               <span class="badge ${a.status === 'OPEN' ? 'badge-high' : 'badge-low'}">${a.status || "OPEN"}</span>
+               <svg id="alert-icon-${i}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s;"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+          
+          <div id="alert-details-${i}" class="alert-details" style="display: none; padding: 0 20px 20px 20px; border-top: 1px solid var(--border-subtle); background: rgba(0,0,0,0.03);">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-top: 20px;">
+              
+              <div>
+                <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.05em;">Vulnerability Context</h4>
+                <p style="font-size: 0.95rem; font-weight: 500; color: var(--text-primary); margin-bottom: 15px;">${escapeHtml(a.message || "Threat detected on asset.")}</p>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                  <div style="background: var(--bg-primary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-primary);">
+                    <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">CVSS Severity</div>
+                    <div style="font-family:'JetBrains Mono'; font-weight:700; color:var(--accent-red);">${a.cvss != null ? a.cvss.toFixed(1) : "—"}</div>
+                  </div>
+                  <div style="background: var(--bg-primary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-primary);">
+                    <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">EPSS Probability</div>
+                    <div style="font-family:'JetBrains Mono'; font-weight:700; color:var(--accent-amber);">${a.epss != null ? (a.epss * 100).toFixed(1) + "%" : "—"}</div>
+                  </div>
+                  <div style="background: var(--bg-primary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-primary);">
+                    <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">Asset Criticality</div>
+                    <div style="font-weight:700;">${a.severity || "MEDIUM"}</div>
+                  </div>
+                </div>
+
+                <div style="font-size: 0.82rem; color: var(--text-secondary);">
+                  <div style="margin-bottom:6px;"><strong>CVEs:</strong> ${a.cveIds?.length ? a.cveIds.map(c => `<span style="font-family:'JetBrains Mono';background:var(--accent-red-dim);color:var(--accent-red);padding:2px 5px;border-radius:4px;margin-right:4px;">${c}</span>`).join("") : "None"}</div>
+                </div>
+              </div>
+
+              <div>
+                <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.05em;">Threat Intelligence Indicators</h4>
+                <div style="background: var(--bg-primary); padding: 15px; border-radius: 8px; border: 1px solid var(--border-primary); display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                   <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-size:0.8rem; color:var(--text-secondary);">KEV (Known Active):</span>
+                      ${boolIcon(a.kev)}
+                   </div>
+                   <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-size:0.8rem; color:var(--text-secondary);">Public Exploit:</span>
+                      ${boolIcon(a.exploitAvailable)}
+                   </div>
+                   <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-size:0.8rem; color:var(--text-secondary);">Malware Activity:</span>
+                      ${boolIcon(a.malwareDetected)}
+                   </div>
+                   <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-size:0.8rem; color:var(--text-secondary);">Remediation Status:</span>
+                      <span style="font-size:0.8rem; font-weight:600;">Open</span>
+                   </div>
+                </div>
+                <div style="margin-top: 15px;">
+                   <button class="btn btn-primary" style="font-size:0.75rem; padding: 6px 12px;" onclick="viewSourceFeed('${a.feedId}')">View Source Feed</button>
+                   <button class="btn btn-secondary" style="font-size:0.75rem; padding: 6px 12px; margin-left:8px;">Mark as Resolved</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      `).join("")}
+    </div>
   `;
 }
+
+window.toggleAlertDetails = (index) => {
+  const details = document.getElementById(`alert-details-${index}`);
+  const icon = document.getElementById(`alert-icon-${index}`);
+  if (details.style.display === "none") {
+    details.style.display = "block";
+    icon.style.transform = "rotate(180deg)";
+  } else {
+    details.style.display = "none";
+    icon.style.transform = "rotate(0deg)";
+  }
+};
+
+window.viewSourceFeed = (feedId) => {
+  state.autoExpandFeedId = feedId;
+  navigateTo('feeds');
+};
 
 // ==================== ASSETS PAGE ====================
 
@@ -909,7 +984,7 @@ async function checkServerStatus() {
 // ==================== THEME TOGGLE ====================
 
 function initTheme() {
-  const saved = localStorage.getItem("tf-theme") || "dark";
+  const saved = localStorage.getItem("tf-theme") || "light";
   document.documentElement.setAttribute("data-theme", saved);
 
   document.getElementById("theme-toggle").addEventListener("click", () => {
