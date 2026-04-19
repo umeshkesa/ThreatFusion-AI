@@ -22,22 +22,121 @@ connectDB();
 let kevSet = new Set();
 let exploitSet = new Set();
 let malwareData = [];
+let isFeedIngestionRunning = false;
 
-// ✅ Load all threat data sequentially
+const AUTO_FEED_INGEST_INTERVAL_MINUTES = Number(process.env.AUTO_FEED_INGEST_INTERVAL_MINUTES || 1);
+const AUTO_FEED_INGEST_ON_START = process.env.AUTO_FEED_INGEST_ON_START !== "false";
+
+const runFeedIngestion = async (trigger = "manual") => {
+    if (isFeedIngestionRunning) {
+        return {
+            message: "Feed ingestion already running",
+            skipped: true,
+            trigger
+        };
+    }
+
+    isFeedIngestionRunning = true;
+
+    try {
+        console.log(`[feeds] Ingestion started by ${trigger}`);
+
+        const allFeeds = await getFeedsFromOPML();
+        const shuffled = [...allFeeds].sort(() => 0.5 - Math.random());
+        const feedUrls = shuffled.slice(0, 50);
+        const items = await fetchRSS(feedUrls);
+
+        let saved = 0;
+        let alertsCreated = 0;
+
+        for (let item of items) {
+            const text = `${item.title || ""} ${item.contentSnippet || ""}`;
+            const extracted = extractData(text);
+
+            if (
+                extracted.cveIds.length === 0 &&
+                extracted.products.length === 0 &&
+                extracted.keywords.length === 0
+            ) {
+                continue;
+            }
+
+            const exists = await Feed.findOne({ url: item.link });
+
+            if (!exists) {
+                const newFeed = await Feed.create({
+                    source: "RSS",
+                    title: item.title,
+                    content: item.contentSnippet,
+                    url: item.link,
+                    publishedAt: item.pubDate,
+                    extracted
+                });
+
+                const companies = await Company.find();
+                for (const company of companies) {
+                    const alerts = await generateAlerts(newFeed, kevSet, malwareData, company.company_id);
+                    alertsCreated += alerts.length;
+                }
+
+                saved++;
+                console.log("[feeds] Saved:", item.title);
+            }
+        }
+
+        const result = {
+            message: "Feeds stored successfully",
+            trigger,
+            totalFetched: items.length,
+            newSaved: saved,
+            alertsCreated
+        };
+
+        console.log("[feeds] Ingestion finished:", result);
+        return result;
+    } finally {
+        isFeedIngestionRunning = false;
+    }
+};
+
+const startAutomaticFeedIngestion = () => {
+    if (!AUTO_FEED_INGEST_INTERVAL_MINUTES || AUTO_FEED_INGEST_INTERVAL_MINUTES <= 0) {
+        console.log("[feeds] Automatic ingestion disabled");
+        return;
+    }
+
+    const intervalMs = AUTO_FEED_INGEST_INTERVAL_MINUTES * 60 * 1000;
+
+    const runAutomaticJob = async () => {
+        try {
+            await runFeedIngestion("automatic");
+        } catch (err) {
+            console.error("[feeds] Automatic ingestion failed:", err.message);
+        }
+    };
+
+    setInterval(runAutomaticJob, intervalMs);
+    console.log(`[feeds] Automatic ingestion scheduled every ${AUTO_FEED_INGEST_INTERVAL_MINUTES} minute(s)`);
+
+    if (AUTO_FEED_INGEST_ON_START) {
+        setTimeout(runAutomaticJob, 10000);
+    }
+};
+
 (async () => {
     exploitSet = await loadExploitDB();
     kevSet = await fetchKEV();
     malwareData = await fetchMalwareSamples();
     console.log("KEV loaded:", kevSet.size);
     console.log("Malware samples loaded:", malwareData.length);
-    console.log("✅ All threat data ready");
+    console.log("All threat data ready");
+    startAutomaticFeedIngestion();
 })();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Auth Endpoints
 app.post("/api/auth/register", async (req, res) => {
     try {
         const { name, password } = req.body;
@@ -62,14 +161,12 @@ app.post("/api/auth/login", async (req, res) => {
 
 app.use("/api/assets", assetRoutes);
 
-// Serve frontend
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.get("/api/health", (req, res) => {
-    res.send("API Running 🚀");
+    res.send("API Running");
 });
 
-// Get saved feeds (Increased limit to 500 so older alerts can still link back to their Source Feeds)
 app.get("/api/feeds", async (req, res) => {
     try {
         const feeds = await Feed.find().sort({ createdAt: -1 }).limit(500);
@@ -79,62 +176,15 @@ app.get("/api/feeds", async (req, res) => {
     }
 });
 
-// Fetch feeds from OPML → RSS → DB → Alerts
 app.get("/fetch-feeds", async (req, res) => {
     try {
-        const allFeeds = await getFeedsFromOPML();
-        const shuffled = [...allFeeds].sort(() => 0.5 - Math.random());
-        const feedUrls = shuffled.slice(0, 50);
-        const items = await fetchRSS(feedUrls);
-
-        let saved = 0;
-
-        for (let item of items) {
-            const extracted = extractData(item.title + " " + item.contentSnippet);
-
-            // ✅ Skip junk BEFORE saving
-            if (
-                extracted.cveIds.length === 0 &&
-                extracted.products.length === 0 &&
-                extracted.keywords.length === 0
-            ) {
-                continue;
-            }
-
-            const exists = await Feed.findOne({ url: item.link });
-
-            if (!exists) {
-                const newFeed = await Feed.create({
-                    source: "RSS",
-                    title: item.title,
-                    content: item.contentSnippet,
-                    url: item.link,
-                    publishedAt: item.pubDate,
-                    extracted
-                });
-
-                // generate alerts for ALL companies that have assets
-                const companies = await Company.find();
-                for (const company of companies) {
-                    await generateAlerts(newFeed, kevSet, malwareData, company.company_id);
-                }
-                saved++;
-                console.log("✅ SAVED:", item.title);
-            }
-        }
-
-        res.json({
-            message: "Feeds stored successfully",
-            totalFetched: items.length,
-            newSaved: saved
-        });
-
+        const result = await runFeedIngestion("manual");
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Get alerts for a specific company
 app.get("/alerts/:company_id", async (req, res) => {
     try {
         const { company_id } = req.params;
@@ -145,14 +195,13 @@ app.get("/alerts/:company_id", async (req, res) => {
     }
 });
 
-// Run alerts on existing feeds for a specific company
 app.get("/run-alerts/:company_id", async (req, res) => {
     try {
         const { company_id } = req.params;
         const feeds = await Feed.find({ "extracted.products": { $exists: true, $ne: [] } });
         let count = 0;
         for (let feed of feeds) {
-            console.log("🚀 Calling generateAlerts for", company_id);
+            console.log("Calling generateAlerts for", company_id);
             const alerts = await generateAlerts(feed, kevSet, malwareData, company_id);
             count += alerts.length;
         }
@@ -162,7 +211,6 @@ app.get("/run-alerts/:company_id", async (req, res) => {
     }
 });
 
-// Seed test assets for a specific company
 app.get("/seed-assets/:company_id", async (req, res) => {
     try {
         const { company_id } = req.params;
@@ -186,8 +234,6 @@ app.get("/seed-assets/:company_id", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
