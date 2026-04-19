@@ -69,10 +69,10 @@ app.get("/api/health", (req, res) => {
     res.send("API Running 🚀");
 });
 
-// Get saved feeds
+// Get saved feeds (Increased limit to 500 so older alerts can still link back to their Source Feeds)
 app.get("/api/feeds", async (req, res) => {
     try {
-        const feeds = await Feed.find().sort({ createdAt: -1 }).limit(50);
+        const feeds = await Feed.find().sort({ createdAt: -1 }).limit(500);
         res.json(feeds);
     } catch (err) {
         res.status(500).json({ error: err.message });

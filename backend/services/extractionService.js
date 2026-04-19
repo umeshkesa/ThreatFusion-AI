@@ -50,13 +50,17 @@ const extractVersionRange = (text) => {
 // 🔹 Product extraction using dictionary (STRONGER than NLP nouns)
 const extractProducts = (text) => {
   const foundProducts = new Set();
-  const lowerText = text.toLowerCase();
-
+  
   for (let key in productDictionary) {
     const aliases = productDictionary[key];
 
     for (let alias of aliases) {
-      if (lowerText.includes(alias.toLowerCase())) {
+      // Use \b (word boundary) to prevent 'ios' acting as a match inside 'axios'
+      // Escape special regex characters in the alias just in case
+      const escapedAlias = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedAlias}\\b`, 'i');
+      
+      if (regex.test(text)) {
         foundProducts.add(key);
       }
     }
@@ -98,22 +102,12 @@ const extractData = (text) => {
   // 🔹 Version range detection
   const versionRange = extractVersionRange(cleanedText);
 
-  // 🔹 Knowledge Graph Expansion
-  const knowledgeGraph = require("../utils/knowledgeGraph");
-
-  const expandedProducts = new Set(products);
-
-  for (let prod of products) {
-    const relations = knowledgeGraph[prod];
-
-    if (relations) {
-      Object.values(relations).flat().forEach(rel => {
-        expandedProducts.add(rel);
-      });
-    }
-  }
-
-  const finalProducts = Array.from(expandedProducts);
+  // Note: We used to expand Knowledge Graph products here, but it caused false positives
+  // by associating unrelated applications that share an OS or dependency.
+  // The Knowledge Graph check is now correctly handled during the asset matching phase 
+  // exclusively inside `matchProduct.js` -> `isRelated()`.
+  
+  const finalProducts = Array.from(new Set(products));
 
   return {
     products: finalProducts,

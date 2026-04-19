@@ -1,17 +1,22 @@
 const knowledgeGraph = require("./knowledgeGraph");
 
 // 🔹 Check indirect relationship
-const isRelated = (assetName, targetProduct) => {
-  if (assetName === targetProduct) return true;
+const isRelated = (assetName, targetFeedProduct) => {
+  if (assetName === targetFeedProduct) return true;
 
-  const relations = knowledgeGraph[assetName];
+  const assetRelations = knowledgeGraph[assetName];
+  if (assetRelations) {
+    // If the asset uses or runs on the vulnerable feed product
+    // Example: Asset (Apache) uses Feed Vulerability (OpenSSL) -> TRUE
+    if (assetRelations.uses?.includes(targetFeedProduct)) return true;
+    if (assetRelations.runs_on?.includes(targetFeedProduct)) return true;
+  }
 
-  if (!relations) return false;
-
-  for (let key in relations) {
-    if (relations[key].includes(targetProduct)) {
-      return true;
-    }
+  const feedRelations = knowledgeGraph[targetFeedProduct];
+  if (feedRelations) {
+      // If the vulnerable feed product is hosted by the asset
+      // Example: Asset (Windows) hosts Feed Vulnerability (IIS) -> TRUE
+      if (feedRelations.hosts?.includes(assetName)) return true;
   }
 
   return false;
