@@ -51,7 +51,7 @@ const runFeedIngestion = async (trigger = "manual") => {
 
         for (let item of items) {
             const text = `${item.title || ""} ${item.contentSnippet || ""}`;
-            const extracted = extractData(text);
+            const extracted = await extractData(text);
 
             if (
                 extracted.cveIds.length === 0 &&

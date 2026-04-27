@@ -30,6 +30,13 @@ const feedSchema = new mongoose.Schema({
     version: String,
     operator: String,
     keywords: [String],
+    nerEntities: [
+      {
+        text: String,
+        type: String,
+        score: Number
+      }
+    ],
     versionRange: {
       min_version: String,
       min_operator: String,

@@ -1,5 +1,6 @@
 const nlp = require("compromise");
 const productDictionary = require("../utils/productDictionary");
+const { extractTransformerEntities } = require("./transformerNerService");
 
 // 🔹 Extract loose version (e.g., "version 1.2.3")
 const extractLooseVersion = (text) => {
@@ -70,12 +71,13 @@ const extractProducts = (text) => {
 };
 
 // 🔹 MAIN EXTRACTION FUNCTION
-const extractData = (text) => {
+const extractData = async (text) => {
   if (!text) {
     return {
       products: [],
       cveIds: [],
-      keywords: []
+      keywords: [],
+      nerEntities: []
     };
   }
 
@@ -87,7 +89,7 @@ const extractData = (text) => {
 
   // 🔹 CVE extraction (IMPROVED)
   const cveRegex = /CVE-\d{4}-\d{4,7}/gi;
-  const cveIds = cleanedText.match(cveRegex) || [];
+  const cveIds = Array.from(new Set((text.match(cveRegex) || []).map((cve) => cve.toUpperCase())));
 
   // 🔹 Keywords
   const keywordsList = ["exploit", "vulnerability", "malware", "ransomware", "attack"];
@@ -95,6 +97,7 @@ const extractData = (text) => {
 
   // 🔹 Product detection
   const products = extractProducts(cleanedText);
+  const transformerResults = await extractTransformerEntities(text);
 
   // 🔹 Version detection
   const versionInfo = extractVersionInfo(cleanedText);
@@ -107,7 +110,10 @@ const extractData = (text) => {
   // The Knowledge Graph check is now correctly handled during the asset matching phase 
   // exclusively inside `matchProduct.js` -> `isRelated()`.
   
-  const finalProducts = Array.from(new Set(products));
+  const finalProducts = Array.from(new Set([
+    ...products,
+    ...transformerResults.products
+  ]));
 
   return {
     products: finalProducts,
@@ -115,7 +121,8 @@ const extractData = (text) => {
     keywords,
     version: versionInfo.version || looseVersion,
     operator: versionInfo.operator,
-    versionRange
+    versionRange,
+    nerEntities: transformerResults.entities
   };
 };
 
