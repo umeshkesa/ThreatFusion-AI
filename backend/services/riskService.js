@@ -16,25 +16,25 @@ const calculateRisk = (
   else if (asset.criticality === "LOW") score += 10;
 
   // 🔥 2. CVSS (0–40)
-  score += cvss * 4;
+  score += cvss * 3;
 
   // 🔥 3. EPSS (0–30)
-  score += epss * 30;
+  score += epss * 20;
 
   // 🔥 4. Exploit availability
-  if (hasExploitDB) score += 25;
+  if (hasExploitDB) score += 10;
 
   // 🔥 5. KEV (real-world exploitation)
-  if (isKEV) score += 30;
+  if (isKEV) score += 15;
 
   // 🔥 6. Malware presence
-  if (malwareDetected) score += 25;
+  if (malwareDetected) score += 10;
 
   // 🔥 7. Keyword intelligence
   const keywords = feed.extracted?.keywords || [];
 
-  if (keywords.includes("exploit")) score += 15;
-  if (keywords.includes("ransomware")) score += 20;
+  if (keywords.includes("exploit")) score += 5;
+  if (keywords.includes("ransomware")) score += 10;
 
   // 🔥 8. INDIRECT MATCH (knowledge graph)
   if (feed.indirectMatch) {
@@ -43,7 +43,7 @@ const calculateRisk = (
 
   // 🔥 9. CONFIDENCE SCORE (NEW 🔥🔥🔥)
   if (asset.confidence) {
-    score += asset.confidence * 10;  // max +10
+    score += asset.confidence * 5;  // max +5  
   }
 
   // 🔥 10. Cap score
