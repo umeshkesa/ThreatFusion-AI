@@ -2,7 +2,10 @@
    ThreatFusion AI — Application Logic
    ======================================== */
 
-const API_BASE = window.location.origin;
+const API_BASE =
+  ["3000", "3001", "3002", "3003"].includes(window.location.port)
+    ? "http://127.0.0.1:5000"
+    : window.location.origin;
 // COMPANY_ID is now dynamic from state.companyId
 
 // ==================== API SERVICE ====================
