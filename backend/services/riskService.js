@@ -32,9 +32,11 @@ const calculateRisk = (
 
   // 🔥 7. Keyword intelligence
   const keywords = feed.extracted?.keywords || [];
+  const attackKeywords = ["exploit", "ransomware", "phishing", "ddos", "malware", "breach", "vulnerability", "attack"];
 
-  if (keywords.includes("exploit")) score += 15;
-  if (keywords.includes("ransomware")) score += 20;
+  if (attackKeywords.some(kw => keywords.includes(kw))) {
+    score += 15;  // Add 15 points if any attack keyword is detected
+  }
 
   // 🔥 8. INDIRECT MATCH (knowledge graph)
   if (feed.indirectMatch) {
