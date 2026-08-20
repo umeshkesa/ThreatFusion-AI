@@ -101,8 +101,6 @@ AUTO_FEED_INGEST_ON_START=true
 ENABLE_TRANSFORMER_NER=false
 ```
 
-> ⚠️ **Never commit your `.env` file.** It contains database credentials and API keys. See the Security section below.
-
 ### 3. Run the backend
 ```bash
 cd backend
@@ -147,11 +145,7 @@ The final risk score (0–100) blends multiple signals:
 
 Priorities: `CRITICAL ≥ 80`, `HIGH ≥ 50`, `MEDIUM ≥ 30`, `LOW < 30`.
 
-## 🔐 Security Notes
 
-- The `.env` file is **not** committed (gitignored) but must be recreated locally.
-- Passwords are currently stored in plaintext and the auth is basic — a production deployment **should** add hashing (bcrypt) and real session/JWT auth.
-- AI/NER model loading can be heavy on startup; it is toggled via `ENABLE_TRANSFORMER_NER`.
 
 ## 🗺️ Roadmap
 
